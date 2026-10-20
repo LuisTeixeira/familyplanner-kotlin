@@ -1,0 +1,9 @@
+<div class="card" style="display: flex; flex-direction: column; justify-content: space-between;">
+    <div>
+        <h3 style="margin-bottom: 0.5rem;">{{ household.name }}</h3>
+        <div class="subtext" style="margin-bottom: 1.5rem;">
+            Created: {{ household.createdAt | fmtDate }}
+        </div>
+    </div>
+    <a href="/app/households/{{ household.id }}" class="btn btn-outline">View Household</a>
+</div>

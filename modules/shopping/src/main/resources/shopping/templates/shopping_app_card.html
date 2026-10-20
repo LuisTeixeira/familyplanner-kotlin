@@ -1,0 +1,14 @@
+<a href="/app/households/{{ householdId }}/shopping/lists" class="card app-card">
+    <div class="card-header">
+        <h3 class="card-title">Shopping Lists</h3>
+        <span class="card-menu" onclick="event.preventDefault();">•••</span>
+    </div>
+    <dev class="card-subtitle">Active Item | Household Overview</dev>
+
+    <div class="kpi-number">{{ summary.pendingItems }}</div>
+
+    <div class="kpi-subtext">
+        Pending {% if summary.pendingItems == 1 %}item{% else %}items{% endif %}
+        (across {{ summary.totalLists }} {% if summary.totalLists == 1 %}list{% else %}lists{% endif %})
+    </div>
+</a>

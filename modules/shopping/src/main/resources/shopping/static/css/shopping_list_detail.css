@@ -1,0 +1,106 @@
+body {
+    font-family: system-ui, sans-serif;
+    max-width: 600px;
+    margin: 2rem auto;
+    padding: 0 1rem;
+    color: #333;
+}
+
+h1 {
+    margin: 0;
+    font-size: 1.8rem;
+}
+.subtext {
+    color: 0;
+    font-size: 0.9rem;
+    margin-top: 0.25rem;
+}
+
+.back-link {
+    display: inline-block;
+    margin-bottom: 1rem;
+    color: #0066cc;
+    text-decoration: none;
+    font-size: 0.9rem;
+}
+.back-link:hover {
+    text-decoration: underline;
+}
+
+.btn {
+    padding: 0.6rem 1.2rem;
+    background: #0066cc;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    font-weight: bold;
+    cursor: pointer;
+}
+.btn:hover {
+    background: #0052a3;
+}
+.btn-secondary {
+    background: #e0e0e0;
+    color: #333;
+    border: none;
+    padding: 0.6rem 1rem;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.add-item-form {
+    display: flex;
+    gap: 0.5rem;
+    margin-bottom: 1.5rem;
+}
+.add-item-form input[type="text"] {
+    flex: 1;
+    padding: 0.6rem;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 0.95rem;
+}
+
+.item-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    background: #fff;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.item-row {
+    padding: 0.8rem 1rem;
+    border-bottom: 1px solid #eee;
+    transition: background-color 0.15s ease;
+}
+.item-row:last-child { border-bottom: none; }
+.item-row:hover { background: #fdfdfd; }
+
+.checkbox-container {
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    user-select: none;
+}
+.checkbox-container input {
+    margin-right: 0.75rem;
+    width: 1.1rem;
+    height: 1.1rem;
+    cursor: pointer;
+}
+
+.item-name {
+    font-size: 1rem;
+    color: #222;
+}
+
+.item-row.done {
+    background: #fafafa;
+}
+.item-row.done .item-name {
+    text-decoration: line-through;
+    color: #888;
+}

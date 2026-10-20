@@ -1,0 +1,22 @@
+<div id="invitation-{{ invitation.id }}" class="card invitation-card" style="border-left: 4px solid #0066cc; margin-bottom: 1rem;">
+    <div style="display: flex; justify-content: space-between; align-items: center;">
+        <div>
+            <h4 style="margin: 0; font-size: 1rem;">Household Invitation</h4>
+            <div class="subtext">You've been invited to join a household.</div>
+        </div>
+        <div style="display: flex; gap: 0.5rem;">
+            <button class="btn btn-secondary"
+                    hx-post="/app/invitations/{{ invitation.id }}/decline"
+                    hx-target="#invitation-{{ invitation.id }}"
+                    hx-swap="outerHTML">
+                Decline    
+            </button>
+            <button class="btn"
+                    hx-post="/app/invitations/{{ invitation.id }}/accept"
+                    hx-target="#invitation-{{ invitation.id }}"
+                    hx-swap="outerHTML">
+                Accept
+            </button>
+        </div>
+    </div>
+</div>

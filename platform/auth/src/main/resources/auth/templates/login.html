@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <title>Login</title>
+        <script src="/static/platform/vendor/htmx.min.js"></script>
+        <link rel="stylesheet" href="/static/auth/css/auth.css">
+        <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                document.body.addEventListener('htmx:beforeSwap', function(evt) {
+                    if (evt.detail.xhr.status === 401 || evt.detail.xhr.status === 422) {
+                        evt.detail.shouldSwap = true;
+                        evt.detail.isError = false;
+                    }
+                });
+            });
+        </script>
+    </head>
+    <body>
+        <div id="auth-container" class="card">
+            <h2>Login</h2>
+            {% if error %}
+                <div class="error">{{ error }}</div>
+            {% endif %}
+            <form hx-post="/app/login" hx-target="#auth-container" hx-swap="outerHTML">
+                <div class="form-group">
+                    <label for="email">Email</label>
+                    <input type="email" id="email" name="email" value="{{ email }}" required autofocus>
+                </div>
+                <div class="form-group">
+                    <label for="password">Password</label>
+                    <input type="password" id="password" name="password" required>
+                </div>
+                <button type="submit">Sign In</button>
+            </form>
+            <div class="footer-link">
+                Don't have an account? <a href="/app/register">Register here</a>
+            </div>
+        </div>
+    </body>
+</html>

@@ -1,0 +1,14 @@
+<a href="/app/households/{{ list.householdId }}/shopping/lists/{{ list.id }}" class="card list-card">
+    <div class="card-header">
+        <h3 class="card-title">{{ list.name }}</h3>
+        <span class="card-menu" onclick="event.preventDefault();">•••</span>
+    </div>
+    <div class="card-subtitle">Created{{ list.createdAt | fmtDate }}</div>
+
+    <div class="kpi-number">{{ list.pendingItems }}</div>
+
+    <div class="kpi-subtext">
+        Pending {% if list.pendingItems == 1 %}item{% else %}items{% endif %}
+        (out of {{ list.totalItems }} total)
+    </div>
+</a>

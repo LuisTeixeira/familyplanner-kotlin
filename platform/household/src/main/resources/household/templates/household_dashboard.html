@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>{{ household.name }} - Dashboard</title>
+        <script src="/static/platform/vendor/htmx.min.js"></script>
+        <link rel="stylesheet" href="/static/household/css/household_dashboard.css">
+        <link rel="stylesheet" href="/static/platform/css/common.css">
+    </head>
+    <body>
+        {% include "header.html" %}
+
+        <main>
+            <a href="/app/households" class="back-link">← All Households</a>
+
+            <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+            <div>
+                <h1>{{ household.name }}</h1>
+                <div class="subtext">Household Apps & Overview</div>
+            </div>
+            <button class="btn btn-secondary" onclick="document.getElementById('invite-modal').classList.add('open')">+ Invite Member</button>
+            </div>
+
+            <div class="grid">
+                {% for widget in widgets %}
+                    {{ widget | raw }}
+                {% endfor %}
+
+                <div class="card app-card disabled">
+                    <div class="card-header">
+                        <h3 class="card-title">Calendar</h3>
+                        <span class="badge">Coming Soon</span>
+                    </div>
+                    <div class="card-subtitle">Events & Reminders</div>
+                    <div class="kpi-number" style="color: #bbb">--</div>
+                    <div class="kpi-subtext">Upcoming household events</div>
+                </div>
+
+                <div class="card app-card disabled">
+                    <div class="card-header">
+                        <h3 class="card-title">Tasks & To-Do</h3>
+                        <span class="badge">Coming Soon</span>
+                    </div>
+                    <div class="card-subtitle">Chores & Assignments</div>
+                    <div class="kpi-number" style="color: #bbb">--</div>
+                    <div class="kpi-subtext">Pending household chores</div>
+                </div>
+            </div>
+        </main>
+
+        {% include "invite_modal.html" %}
+    </body>
+</html>

@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>{{ list.name }} - Shopping List</title>
+        <script src="/static/platform/vendor/htmx.min.js"></script>
+        <link rel="stylesheet" href="/static/shopping/css/shopping_list_detail.css">
+        <link rel="stylesheet" href="/static/platform/css/common.css">
+    </head>
+    <body>
+        {% include "header.html" %}
+
+        <main class="list-container">
+            <a href="/app/households/{{ householdId }}/shopping/lists" class="back-link">← All Shopping Lists</a>
+
+            <h1>{{ list.name }}</h1>
+            <div class="subtext" style="margin-bottom: 1.5rem;">Created {{ list.createdAt | fmtDate }}</div>
+
+            <form hx-post="/app/households/{{ householdId }}/shopping/lists/{{ list.id }}/items"
+                  hx-target="#items-list"
+                  hx-swap="beforeend"
+                  hx-on:after-request="if(event.detail.successful) this.reset();"
+                  class="add-item-form">
+                <input type="text" name="name" placeholder="Add new item (e.g., Milk, Bread)..." required autofocus autocomplete="off">
+                <button type="submit" class="btn">Add</button>
+            </form>
+
+            <ul id="items-list" class="items-list">
+                {% for item in items %}
+                    {% include "shopping_item_row.html" %}
+                {% endfor %}
+            </ul>
+        </main>        
+    </body>
+</html>

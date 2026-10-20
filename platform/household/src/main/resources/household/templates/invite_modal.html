@@ -1,0 +1,22 @@
+<div id="invite-modal" class="modal-overlay">
+    <div class="card modal-card">
+        <h3 style="margin-bottom: 1rem;">Invite Family Member</h3>
+        <form hx-post="/app/households/{{ household.id }}/invites"
+              hx-target="#invite-feedback"
+              hx-swap="innerHTML"
+              hx-on::after-request="if(event.detail.successful) this.reset();">
+            
+            <div id="invite-feedback"></div>
+
+            <div class="form-group">
+                <label for="email">User Email</label>
+                <input type="email" id="email" name="email" placeholder="relative@example.com" required>
+            </div>
+
+            <div class="modal-actions">
+                <button type="button" class="btn btn-secondary" onclick="document.getElementById('invite-modal').classList.remove('open')">Close</button>
+                <button type="submit" class="btn">Send Invite</button>
+            </div>
+        </form>
+    </div>
+</div>

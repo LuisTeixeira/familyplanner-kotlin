@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Shopping List - Family Planner</title>
+        <script src="/static/platform/vendor/htmx.min.js"></script>
+        <link rel="stylesheet" href="/static/shopping/css/shopping_dashboard.css">
+        <link rel="stylesheet" href="/static/platform/css/common.css">
+    </head>
+    <body>
+        {% include "header.html" %}
+
+        <main>
+            <a href="/app/households/{{ householdId }}" class="back-link">← Household Dashboard</a>
+
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1.5rem;">
+                <div>
+                    <h1>Shopping List</h1>
+                    <div class="subtext">Manage active and completed items for your household</div>
+                </div>
+                <button class="btn" onclick="document.getElementById('modal').classList.add('open')">+ New List</button>
+            </div>
+
+            <div id="lists-grid" class="grid">
+                {% for list in lists %}
+                    {% include "shopping_list_card.html" %}
+                {% else %}
+                    <div id="no-lists" class="empty-state">
+                        <h3>No Shopping Lists Found</h3>
+                        <p class="subtext">Create a new shopping list to start tracking items.</p>
+                    </div>
+                {% endfor %}
+            </div>
+        </main>
+
+        <div id="modal" class="modal-overlay">
+            <div class="card modal-card">
+                <h3 style="margin-bottom: 1rem;">Create Shopping List</h3>
+                <form hx-post="/app/households/{{ householdId }}/shopping/lists"
+                      hx-target="#lists-grid"
+                      hx-swap="beforeend"
+                      hx-on::after-request="if(event.detail.successful) { document.getElementById('modal').classList.remove('open'); this.reset(); document.getElementById('no-lists')?.remove(); }">
+                
+                      <div class="form-group">
+                        <label for="name">List Name</label>
+                        <input type="text" id="name" name="name" required placeholder="e.g., Weekly Groceries, Hardware Store">
+                      </div>
+                      <div class="modal-actions">
+                        <button type="button" class="btn btn-secondary" onclick="document.getElementById('modal').classList.remove('open')">Cancel</button>
+                        <button type="submit" class="btn">Create</button>
+                      </div>
+                </form>
+            </div>
+        </div>
+    </body>
+</html>

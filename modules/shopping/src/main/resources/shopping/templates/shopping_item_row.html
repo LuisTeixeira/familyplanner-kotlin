@@ -1,0 +1,10 @@
+<li id="item-{{ item.id }}" class="item-row {% if item.isCompleted %}done{% endif %}">
+    <label class="checkbox-container">
+        <input type="checkbox"
+               {% if item.isCompleted %}checked{% endif %}
+               hx-patch="/app/households/{{ householdId }}/shopping/items/{{ item.id }}/toggle"
+               hx-target="#item-{{ item.id }}"
+               hx-swap="outerHTML">
+        <span class="item-name">{{ item.name }}</span>
+    </label>
+</li>

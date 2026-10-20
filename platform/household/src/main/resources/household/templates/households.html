@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Households - Family Planner</title>
+        <script src="/static/platform/vendor/htmx.min.js"></script>
+        <link rel="stylesheet" href="/static/household/css/household.css">
+        <link rel="stylesheet" href="/static/platform/css/common.css">
+    </head>
+    <body>
+        {% include "header.html" %}
+
+        <main>
+            {% if invitations|length > 0 %}
+                <div id="pending-invitations-container" style="margin-bottom: 2rem;">
+                    <h3 style="margin-bottom: 0.75rem;">Pending Invitations</h3>
+                    {% for invitation in invitations %}
+                        {% include "invitation_card.html" %}
+                    {% endfor %}
+                </div>
+            {% endif %}
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1.5rem;">
+                <div>
+                    <h1>Your Households</h1>
+                    <div class="subtext">Select a household or create a new one to start planning</div>
+                </div>
+                <button class="btn" onclick="document.getElementById('modal').classList.add('open')">+ New Household</button>
+            </div>
+
+            <div id="households-grid" class="grid">
+                {% for household in households %}
+                    {% include "household_card.html" %}
+                {% else %}
+                    <div id="no-households" class="empty-state">
+                        <h3>No Households Found</h3>
+                        <p class="subtext">Get started by creating your first family household</p>
+                    </div>
+                {% endfor %}
+            </div>
+        </main>
+
+        <div id="modal" class="modal-overlay">
+            <div class="card modal-card">
+                <h3 style="margin-bottom: 1rem;">Create Household</h3>
+                <form hx-post="/app/households"
+                      hx-target="#households-grid"
+                      hx-swap="beforeend"
+                      hx-on::after-request="if(event.detail.successful) { document.getElementById('modal').classList.remove('open'); this.reset(); document.getElementById('no-households')?.remove(); }">
+                    <div class="form-group">
+                        <label for="name">Household Name</label>
+                        <input type="text" id="name" name="name" required placeholder="e.g., Lüdicke Teixeira Family">
+                    </div>
+                    <div class="modal-actions">
+                        <button type="submit" class="btn btn-secondary" onclick="document.getElementById('modal').classList.remove('open')">Cancel</button>
+                        <button type="submit" class="btn">Create</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </body>
+</html>
