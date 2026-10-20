@@ -12,6 +12,7 @@ dependencies {
     implementation(project(":platform:auth"))
     implementation(project(":platform:household"))
     implementation(project(":modules:shopping"))
+    implementation(project(":modules:calendar"))
     implementation(libs.ktor.server.core)
     implementation(libs.ktor.server.cio)
     implementation(libs.ktor.server.auth)
