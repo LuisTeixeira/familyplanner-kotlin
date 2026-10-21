@@ -1,0 +1,20 @@
+<a href="/app/households/{{ householdId }}/calendar" class="card app-card">
+    <div class="card-header">
+        <h3 class="card-title">Calendar</h3>
+    </div>
+    <div class="card-subtitle">Upcoming Events</div>
+
+    {% if summary.nextEvent %}
+        <div class="kpi-number">{{ summary.nextEvent.title }}</div>
+        <div class="kpi-subtext">
+            Next: {{ summary.nextEvent.date }}{% if summary.nextEvent.time %} at {{ summary.nextEvent.time }}{% endif %}
+        </div>
+    {% else %}
+        <div class="kpi-number">--</div>
+        <div class="kpi-subtext">No upcoming events</div>
+    {% endif %}
+
+    <div class="kpi-subtext">
+        {{ summary.eventsNextWeek }} {% if summary.eventsNextWeek == 1 %}event{% else %}events{% endif %} in the next 7 days
+    </div>
+</a>

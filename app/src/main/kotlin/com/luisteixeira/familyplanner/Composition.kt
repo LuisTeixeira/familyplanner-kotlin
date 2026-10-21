@@ -7,6 +7,11 @@ import com.luisteixeira.familyplanner.auth.api.AuthApiHandler
 import com.luisteixeira.familyplanner.auth.persistence.AuthRepository
 import com.luisteixeira.familyplanner.auth.persistence.InMemoryAuthRepository
 import com.luisteixeira.familyplanner.auth.web.AuthWebHandler
+import com.luisteixeira.familyplanner.calendar.CalendarModule
+import com.luisteixeira.familyplanner.calendar.CalendarService
+import com.luisteixeira.familyplanner.calendar.persistence.CalendarRepository
+import com.luisteixeira.familyplanner.calendar.persistence.InMemoryCalendarRepository
+import com.luisteixeira.familyplanner.calendar.web.CalendarDashboardWidget
 import com.luisteixeira.familyplanner.core.module.AppModule
 import com.luisteixeira.familyplanner.core.module.PLATFORM_MODULE
 import com.luisteixeira.familyplanner.core.module.templateRoot
@@ -48,6 +53,7 @@ private class Storage(
     val auth: AuthRepository,
     val household: HouseholdRepository,
     val shopping: ShoppingRepository,
+    val calendar: CalendarRepository,
     val transactions: TransactionRunner,
 )
 
@@ -56,6 +62,7 @@ private fun Persistence.storage(): Storage = when (this) {
         auth = InMemoryAuthRepository(),
         household = InMemoryHouseholdRepository(),
         shopping = InMemoryShoppingRepository(),
+        calendar = InMemoryCalendarRepository(),
         transactions = InMemoryTransactionRunner(),
     )
 }
@@ -66,9 +73,16 @@ fun composeApp(config: AppConfig = AppConfig()): ComposedApp {
     val authService = AuthService(storage.auth)
     val householdService = HouseholdService(storage.household, authService, storage.transactions)
     val shoppingService = ShoppingService(storage.shopping)
+    val calendarService = CalendarService(storage.calendar)
 
     val templates = TemplateRegistry(
-        listOf(PLATFORM_MODULE, AuthModule.NAME, HouseholdModule.NAME, ShoppingModule.NAME).map(::templateRoot),
+        listOf(
+            PLATFORM_MODULE,
+            AuthModule.NAME,
+            HouseholdModule.NAME,
+            ShoppingModule.NAME,
+            CalendarModule.NAME,
+        ).map(::templateRoot),
     )
 
     val modules = listOf(
@@ -81,7 +95,10 @@ fun composeApp(config: AppConfig = AppConfig()): ComposedApp {
             HouseholdWebHandler(
                 householdService,
                 templates,
-                dashboardWidgets = listOf(ShoppingDashboardWidget(shoppingService, templates)),
+                dashboardWidgets = listOf(
+                    ShoppingDashboardWidget(shoppingService, templates),
+                    CalendarDashboardWidget(calendarService, templates),
+                    ),
             ),
             HouseholdApiHandler(householdService),
         ),
@@ -90,6 +107,9 @@ fun composeApp(config: AppConfig = AppConfig()): ComposedApp {
             ShoppingWebHandler(shoppingService, templates),
             ShoppingApiHandler(shoppingService),
         ),
+        CalendarModule(
+            householdService,
+        )
     )
 
     return ComposedApp(modules, authService)

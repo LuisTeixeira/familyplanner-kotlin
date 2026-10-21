@@ -12,4 +12,10 @@ class InMemoryCalendarRepository: CalendarRepository {
             events[event.id] = event
         }
     }
+
+    override suspend fun listByHousehold(householdId: UUID): List<Event> {
+        synchronized(lock) {
+            return events.values.filter { it.householdId == householdId }
+        }
+    }
 }

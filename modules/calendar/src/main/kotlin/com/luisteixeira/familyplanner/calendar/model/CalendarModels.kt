@@ -30,3 +30,8 @@ data class EventInput(
     val description: String?,
     val address: String?,
 )
+
+data class CalendarSummary(
+    val nextEvent: Event?,
+    val eventsNextWeek: Int,
+)

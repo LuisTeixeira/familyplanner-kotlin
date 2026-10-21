@@ -1,10 +1,12 @@
 package com.luisteixeira.familyplanner.calendar
 
+import com.luisteixeira.familyplanner.calendar.model.CalendarSummary
 import com.luisteixeira.familyplanner.calendar.model.Event
 import com.luisteixeira.familyplanner.calendar.model.EventInput
 import com.luisteixeira.familyplanner.calendar.persistence.CalendarRepository
 import com.luisteixeira.familyplanner.core.domain.DomainException
 import java.time.Clock
+import java.time.Duration
 import java.util.UUID
 
 class CalendarService(
@@ -45,6 +47,21 @@ class CalendarService(
         )
         repo.saveEvent(event)
         return event
+    }
+
+    suspend fun summary(householdId: UUID): CalendarSummary {
+        val now = clock.instant()
+        val weekEnd = now.plus(Duration.ofDays(7))
+
+        val upcoming = repo.listByHousehold(householdId)
+            .map { event -> event to event.startsAt()}
+            .filter { (_, start) -> start.toInstant() >= now }
+            .sortedBy { (_, start) -> start }
+
+        return CalendarSummary(
+            nextEvent = upcoming.firstOrNull()?.first,
+            eventsNextWeek = upcoming.count() { (_, start) -> start.toInstant() < weekEnd }
+        )
     }
 
     private companion object {
