@@ -1,5 +1,6 @@
 package com.luisteixeira.familyplanner
 
+import com.luisteixeira.familyplanner.config.AppConfig
 import io.ktor.server.cio.CIO
 import io.ktor.server.engine.embeddedServer
 import org.slf4j.LoggerFactory
