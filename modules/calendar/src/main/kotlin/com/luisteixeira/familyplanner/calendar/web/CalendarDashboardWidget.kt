@@ -7,8 +7,8 @@ import java.util.UUID
 
 class CalendarDashboardWidget(
     private val service: CalendarService,
-    private val templates: TemplateRegistry
-) : DashboardWidget{
+    private val templates: TemplateRegistry,
+) : DashboardWidget {
 
     override val order = 20
 

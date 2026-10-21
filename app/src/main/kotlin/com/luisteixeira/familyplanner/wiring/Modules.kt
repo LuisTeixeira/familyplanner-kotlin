@@ -4,7 +4,9 @@ import com.luisteixeira.familyplanner.auth.AuthModule
 import com.luisteixeira.familyplanner.auth.api.AuthApiHandler
 import com.luisteixeira.familyplanner.auth.web.AuthWebHandler
 import com.luisteixeira.familyplanner.calendar.CalendarModule
+import com.luisteixeira.familyplanner.calendar.api.CalendarApiHandler
 import com.luisteixeira.familyplanner.calendar.web.CalendarDashboardWidget
+import com.luisteixeira.familyplanner.calendar.web.CalendarWebHandler
 import com.luisteixeira.familyplanner.core.module.AppModule
 import com.luisteixeira.familyplanner.household.DashboardWidget
 import com.luisteixeira.familyplanner.household.HouseholdModule
@@ -14,6 +16,7 @@ import com.luisteixeira.familyplanner.shopping.ShoppingModule
 import com.luisteixeira.familyplanner.shopping.api.ShoppingApiHandler
 import com.luisteixeira.familyplanner.shopping.web.ShoppingDashboardWidget
 import com.luisteixeira.familyplanner.shopping.web.ShoppingWebHandler
+import java.time.ZoneId
 
 fun AppContext.modules(): List<AppModule> = listOf(
     authModule(this),
@@ -45,6 +48,12 @@ private fun shoppingModule(ctx: AppContext) = ShoppingModule(
 
 private fun calendarModule(ctx: AppContext) = CalendarModule(
     ctx.household,
+    CalendarWebHandler(
+        ctx.calendar,
+        ctx.templates,
+        ZoneId.systemDefault(),
+    ),
+    CalendarApiHandler(ctx.calendar, ZoneId.systemDefault())
 )
 
 private fun dashboardWidgets(ctx: AppContext): List<DashboardWidget> = listOf(

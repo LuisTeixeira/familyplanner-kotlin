@@ -4,10 +4,10 @@
     </div>
     <div class="card-subtitle">Upcoming Events</div>
 
-    {% if summary.nextEvent %}
+    {% if summary.nextEvent is not null %}
         <div class="kpi-number">{{ summary.nextEvent.title }}</div>
         <div class="kpi-subtext">
-            Next: {{ summary.nextEvent.date }}{% if summary.nextEvent.time %} at {{ summary.nextEvent.time }}{% endif %}
+            Next: {{ summary.nextEvent.date }}{% if summary.nextEvent.time is not null %} at {{ summary.nextEvent.time }}{% endif %}
         </div>
     {% else %}
         <div class="kpi-number">--</div>

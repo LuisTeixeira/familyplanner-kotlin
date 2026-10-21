@@ -7,7 +7,9 @@ import com.luisteixeira.familyplanner.calendar.persistence.CalendarRepository
 import com.luisteixeira.familyplanner.core.domain.DomainException
 import java.time.Clock
 import java.time.Duration
+import java.time.LocalTime
 import java.util.UUID
+import java.time.Instant
 
 class CalendarService(
     private val repo: CalendarRepository,
@@ -41,6 +43,10 @@ class CalendarService(
             date = input.date,
             time = input.time,
             timezone = input.timezone,
+            startsAt = input.date
+                .atTime(input.time ?: LocalTime.MIDNIGHT)
+                .atZone(input.timezone)
+                .toInstant(),
             description = description,
             address = address,
             createdAt = clock.instant()
@@ -49,18 +55,24 @@ class CalendarService(
         return event
     }
 
+    suspend fun listEvents(householdId: UUID, from: Instant, to: Instant): List<Event> {
+        if (!from.isBefore(to)) {
+            throw DomainException("from must be before to")
+        }
+        if (Duration.between(from, to) > MAX_RANGE) {
+            throw DomainException("range must be at most 366 days")
+        }
+
+        return repo.listByHousehold(householdId, from, to)
+    }
+
     suspend fun summary(householdId: UUID): CalendarSummary {
         val now = clock.instant()
         val weekEnd = now.plus(Duration.ofDays(7))
 
-        val upcoming = repo.listByHousehold(householdId)
-            .map { event -> event to event.startsAt()}
-            .filter { (_, start) -> start.toInstant() >= now }
-            .sortedBy { (_, start) -> start }
-
         return CalendarSummary(
-            nextEvent = upcoming.firstOrNull()?.first,
-            eventsNextWeek = upcoming.count() { (_, start) -> start.toInstant() < weekEnd }
+            nextEvent = repo.findNextEvent(householdId, now),
+            eventsNextWeek = repo.listByHousehold(householdId, now, weekEnd).size,
         )
     }
 
@@ -68,6 +80,7 @@ class CalendarService(
         const val TITLE_MAX = 200
         const val DESCRIPTION_MAX = 2000
         const val ADDRESS_MAX = 300
+        val MAX_RANGE: Duration = Duration.ofDays(366)
     }
 }
 

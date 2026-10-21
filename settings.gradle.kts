@@ -6,5 +6,5 @@ include(
     ":platform:auth",
     ":platform:household",
     ":modules:shopping",
-    "modules:calendar",
+    ":modules:calendar",
 )

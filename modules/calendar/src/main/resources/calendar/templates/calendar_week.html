@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Calendar - Family Planner</title>
+        <script src="/static/platform/vendor/htmx.min.js"></script>
+        <link rel="stylesheet" href="/static/calendar/css/calendar.css">
+        <link rel="stylesheet" href="/static/platform/css/common.css">
+        <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                document.body.addEventListener('htmx:beforeSwap', function(evt) {
+                    if (evt.detail.xhr.status === 422) {
+                        evt.detail.shouldSwap = true;
+                        evt.detail.isError = false;
+                    }
+                });
+            });
+        </script>
+    </head>
+    <body>
+        {% include "header.html" %}
+
+        <main>
+            <a href="/app/households/{{ householdId }}" class="back-link">Household Dashboard</a>
+
+            <div class="week-header">
+                <div>
+                    <h1>Calendar</h1>
+                    <div class="subtext">{{ week.start }} - {{ week.days[6].date }}</div>
+                </div>
+                <button class="btn" onclick="document.getElementById('event-modal').classList.add('open')">+ New Event</button>
+            </div>
+
+            <div class="week-nav">
+                <a href="/app/households/{{ householdId }}/calendar?week={{ week.previous }}&timezone={{ timezone }}" class="btn btn-secondary">← Previous</a>
+                <a href="/app/households/{{ householdId }}/calendar?timezone={{ timezone }}" class="btn btn-secondary">Today</a>
+                <a href="/app/households/{{ householdId }}/calendar?week={{ week.next }}&timezone={{ timezone }}" class="btn btn-secondary">Next →</a>
+            </div>
+
+            <div class="week-grid">
+                {% for day in week.days %}
+                    <div class="day-column {% if day.date == today %}today{% endif %}">
+                        <div class="day-header">
+                            <div class="day-name">{{ day.date.dayOfWeek }}</div>
+                            <div class="day-date">{{ day.date }}</div>
+                        </div>
+                        {% for event in day.events %}
+                            <div class="event-chip">
+                                <div class="event-time">{{ event.time|default("All day") }}</div>
+                                <div class="event-title">{{ event.title }}</div>
+                                {% if event.address %}<div class="event-address">{{ event.address }}</div>{% endif %}
+                            </div>
+                        {% else %}
+                            <div class="day-empty subtext">No events</div>
+                        {% endfor %}
+                    </div>
+                {% endfor %}
+            </div>
+        </main>
+
+        {% include "calendar_event_modal.html" %}
+    </body>
+</html>

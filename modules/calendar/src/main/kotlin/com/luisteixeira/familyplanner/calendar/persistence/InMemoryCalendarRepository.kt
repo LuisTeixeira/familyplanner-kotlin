@@ -1,6 +1,7 @@
 package com.luisteixeira.familyplanner.calendar.persistence
 
 import com.luisteixeira.familyplanner.calendar.model.Event
+import java.time.Instant
 import java.util.UUID
 
 class InMemoryCalendarRepository: CalendarRepository {
@@ -13,9 +14,19 @@ class InMemoryCalendarRepository: CalendarRepository {
         }
     }
 
-    override suspend fun listByHousehold(householdId: UUID): List<Event> {
+    override suspend fun listByHousehold(householdId: UUID, from: Instant, to: Instant): List<Event> {
         synchronized(lock) {
-            return events.values.filter { it.householdId == householdId }
+            return events.values
+                .filter { it.householdId == householdId && it.startsAt >= from && it.startsAt < to}
+                .sortedBy { it.startsAt }
+        }
+    }
+
+    override suspend fun findNextEvent(householdId: UUID, from: Instant): Event? {
+        synchronized(lock) {
+            return events.values
+                .filter { it.householdId == householdId && it.startsAt >= from }
+                .minByOrNull { it.startsAt }
         }
     }
 }
