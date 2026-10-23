@@ -23,6 +23,7 @@ dependencies {
     testImplementation(kotlin("test"))
     testImplementation(libs.ktor.server.test.host)
     testImplementation(libs.kotlinx.serialization.json)
+    testImplementation(libs.testcontainers.postgresql)
 }
 
 application {

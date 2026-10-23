@@ -28,4 +28,6 @@ fun Persistence.storage(): Storage = when (this) {
         calendar = InMemoryCalendarRepository(),
         transactions = InMemoryTransactionRunner(),
     )
+
+    Persistence.POSTGRES -> error("Postgres storage is not implemented yet")
 }
