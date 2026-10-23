@@ -14,6 +14,18 @@ class InMemoryCalendarRepository: CalendarRepository {
         }
     }
 
+    override suspend fun findEvent(eventId: UUID): Event? {
+        synchronized(lock) {
+            return events[eventId]
+        }
+    }
+
+    override suspend fun deleteEvent(eventId: UUID) {
+        synchronized(lock) {
+            events.remove(eventId)
+        }
+    }
+
     override suspend fun listByHousehold(householdId: UUID, from: Instant, to: Instant): List<Event> {
         synchronized(lock) {
             return events.values

@@ -17,42 +17,47 @@ class CalendarService(
 ) {
 
     suspend fun createEvent(householdId: UUID, userId: UUID, input: EventInput): Event {
-        val title = input.title.trim()
-        if (title.isEmpty()) {
-            throw DomainException("event title required")
-        }
-        if (title.length > TITLE_MAX) {
-            throw DomainException("event title must have less than $TITLE_MAX characters")
-        }
-
-        val description = input.description.blankToNull()
-        if (description != null && description.length > DESCRIPTION_MAX) {
-            throw DomainException("event description must have less than $DESCRIPTION_MAX characters")
-        }
-
-        val address = input.address.blankToNull()
-        if (address != null && address.length > ADDRESS_MAX) {
-            throw DomainException("event address must have less than $ADDRESS_MAX characters")
-        }
-
+        val fields = normalize(input)
         val event = Event(
             id = UUID.randomUUID(),
             householdId = householdId,
             createdBy = userId,
-            title = title,
-            date = input.date,
-            time = input.time,
-            timezone = input.timezone,
-            startsAt = input.date
-                .atTime(input.time ?: LocalTime.MIDNIGHT)
-                .atZone(input.timezone)
-                .toInstant(),
-            description = description,
-            address = address,
+            title = fields.title,
+            date = fields.date,
+            time = fields.time,
+            timezone = fields.timezone,
+            startsAt = fields.startsAt(),
+            description = fields.description,
+            address = fields.address,
             createdAt = clock.instant()
         )
         repo.saveEvent(event)
         return event
+    }
+
+    suspend fun getEvent(householdId: UUID, eventId: UUID): Event {
+        return requireEvent(householdId, eventId)
+    }
+
+    suspend fun updateEvent(householdId: UUID, eventId: UUID, input: EventInput): Event {
+        val existing = requireEvent(householdId, eventId)
+        val fields = normalize(input)
+        val updated = existing.copy(
+            title = fields.title,
+            date = fields.date,
+            time =  fields.time,
+            timezone = fields.timezone,
+            startsAt = fields.startsAt(),
+            description = fields.description,
+            address = fields.address,
+        )
+        repo.saveEvent(updated)
+        return updated
+    }
+
+    suspend fun deleteEvent(householdId: UUID, eventId: UUID) {
+        requireEvent(householdId, eventId)
+        repo.deleteEvent(eventId)
     }
 
     suspend fun listEvents(householdId: UUID, from: Instant, to: Instant): List<Event> {
@@ -75,6 +80,39 @@ class CalendarService(
             eventsNextWeek = repo.listByHousehold(householdId, now, weekEnd).size,
         )
     }
+
+    private suspend fun requireEvent(householdId: UUID, eventId: UUID): Event {
+        val event = repo.findEvent(eventId)
+        if (event == null || event.householdId != householdId) {
+            throw DomainException("event not found")
+        }
+        return event
+    }
+
+    private fun normalize(input: EventInput): EventInput {
+        val title = input.title.trim()
+        if (title.isEmpty()) {
+            throw DomainException("event title is required")
+        }
+        if (title.length > TITLE_MAX) {
+            throw DomainException("event title must not be longer than $TITLE_MAX characters")
+        }
+
+        val description = input.description.blankToNull()
+        if (description != null && description.length > DESCRIPTION_MAX) {
+            throw DomainException("event description must not be longer than $DESCRIPTION_MAX characters")
+        }
+
+        val address = input.address.blankToNull()
+        if (address != null && address.length > ADDRESS_MAX) {
+            throw DomainException("event address must not be longer than $ADDRESS_MAX characters")
+        }
+
+        return input.copy(title = title, description = description, address = address)
+    }
+
+    private fun EventInput.startsAt(): Instant =
+        date.atTime(time ?: LocalTime.MIDNIGHT).atZone(timezone).toInstant()
 
     private companion object {
         const val TITLE_MAX = 200

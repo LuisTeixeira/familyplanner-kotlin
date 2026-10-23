@@ -6,8 +6,10 @@ import com.luisteixeira.familyplanner.core.module.AppModule
 import com.luisteixeira.familyplanner.household.HouseholdAccess
 import com.luisteixeira.familyplanner.household.householdScoped
 import io.ktor.server.routing.Route
+import io.ktor.server.routing.delete
 import io.ktor.server.routing.get
 import io.ktor.server.routing.post
+import io.ktor.server.routing.put
 import io.ktor.server.routing.route
 
 class CalendarModule(
@@ -26,7 +28,11 @@ class CalendarModule(
         r.route("/households/{householdID}/calendar") {
             householdScoped(householdAccess)
             get { webHandler.showWeek(call) }
+            get("/events/new") {webHandler.newEventForm(call)}
+            get("/events/{eventID}") {webHandler.editEventForm(call)}
             post("/events") {webHandler.createEvent(call)}
+            put("/events/{eventID}") {webHandler.updateEvent(call)}
+            delete("/events/{eventID}") {webHandler.deleteEvent(call)}
         }
     }
 
@@ -35,6 +41,8 @@ class CalendarModule(
             householdScoped(householdAccess)
             get { apiHandler.listEvents(call) }
             post { apiHandler.createEvent(call) }
+            put("/{eventID}") { apiHandler.updateEvent(call) }
+            delete("/{eventID}") { apiHandler.deleteEvent(call) }
         }
     }
 }

@@ -11,26 +11,23 @@ import com.luisteixeira.familyplanner.core.serialization.UUIDSerializer
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import java.time.Instant
-import java.time.LocalDate
-import java.time.LocalTime
 import java.time.ZoneId
-import java.time.format.DateTimeParseException
 import java.util.UUID
 
 @Serializable
-data class CreateEventRequest(
+data class EventRequest(
     val title: String = "",
     val date: String = "",
-    val time: String? = "",
-    val timezone: String? = "",
-    val description: String? = "",
-    val address: String? = "",
+    val time: String? = null,
+    val timezone: String? = null,
+    val description: String? = null,
+    val address: String? = null,
 ) {
     fun toInput(defaultTimezone: ZoneId): EventInput = EventInput(
         title = title,
         date = parseDate(date),
-        time = time?.let { parseTime(it) },
-        timezone = timezone?.let { parseZone(it) } ?: defaultTimezone,
+        time = time?.takeIf { it.isNotBlank() }?.let { parseTime(it) },
+        timezone = timezone?.takeIf { it.isNotBlank() }?.let { parseZone(it) } ?: defaultTimezone,
         description = description,
         address = address
     )
@@ -66,7 +63,7 @@ fun Event.toDto(): EventDto = EventDto(
     createdBy = createdBy,
     title = title,
     date = date.toString(),
-    time = time.toString(),
+    time = time?.toString(),
     timezone = timezone.id,
     startsAt = startsAt,
     description = description,

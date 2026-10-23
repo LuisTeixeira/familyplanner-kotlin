@@ -96,6 +96,10 @@ input, textarea {
     border-left: 3px solid #0066cc;
     border-radius: 4px;
     padding: 0.4rem 0.5rem;
+    cursor: pointer;
+}
+.event-chip:hover{
+    background: #e1efff;
 }
 
 .event-time {

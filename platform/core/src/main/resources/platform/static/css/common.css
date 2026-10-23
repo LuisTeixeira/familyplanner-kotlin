@@ -45,6 +45,15 @@ header .btn-secondary:hover {
 .btn-outline { background: transparent; color: #0066cc; border: 1px; width: 100%; }
 .btn-outline:hover { background: #f0f7ff; }
 
+.btn-danger {
+    background: #b00020;
+    color: #fff;
+}
+
+.btn-danger:hover {
+    background: #8a0019;
+}
+
 .modal-overlay {
     display: none;
     position: fixed;
