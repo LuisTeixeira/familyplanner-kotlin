@@ -7,6 +7,7 @@ import com.luisteixeira.familyplanner.core.module.staticRoot
 import com.luisteixeira.familyplanner.core.web.HttpError
 import io.ktor.http.HttpStatusCode
 import io.ktor.server.application.Application
+import io.ktor.server.application.ApplicationStopped
 import io.ktor.server.application.install
 import io.ktor.server.auth.Authentication
 import io.ktor.server.auth.authenticate
@@ -21,6 +22,7 @@ import org.slf4j.LoggerFactory
 private val log = LoggerFactory.getLogger("familyplanner")
 
 fun Application.familyPlannerApp(app: ComposedApp) {
+    monitor.subscribe(ApplicationStopped) { app.close() }
     install(CallLogging)
 
     install(Authentication) {
