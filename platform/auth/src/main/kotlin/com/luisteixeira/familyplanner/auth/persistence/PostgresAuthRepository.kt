@@ -12,7 +12,7 @@ import org.jetbrains.exposed.v1.jdbc.Database
 import org.jetbrains.exposed.v1.jdbc.deleteWhere
 import org.jetbrains.exposed.v1.jdbc.insert
 import org.jetbrains.exposed.v1.jdbc.selectAll
-import org.jetbrains.exposed.v1.jdbc.transactions.suspendTransaction
+import com.luisteixeira.familyplanner.core.persistence.postgres.dbTransaction
 import java.sql.SQLException
 import java.time.ZoneOffset
 
@@ -22,7 +22,7 @@ class PostgresAuthRepository (
 
     override suspend fun saveUser(user: User) {
         try {
-            suspendTransaction {
+            dbTransaction(database) {
                 UsersTable.insert {
                     it[id] = user.id
                     it[email] = user.email
@@ -40,7 +40,7 @@ class PostgresAuthRepository (
     }
 
     override suspend fun findUserByEmail(email: String): User? {
-        return suspendTransaction(database) {
+        return dbTransaction(database) {
             UsersTable.selectAll().where {
                 UsersTable.email eq email
             }.singleOrNull()?.toUser()
@@ -48,7 +48,7 @@ class PostgresAuthRepository (
     }
 
     override suspend fun saveSession(session: Session) {
-        suspendTransaction(database) {
+        dbTransaction(database) {
             SessionsTable.insert {
                 it[token] = session.token
                 it[userId] = session.userId
@@ -58,7 +58,7 @@ class PostgresAuthRepository (
     }
 
     override suspend fun findSession(token: String): Session? {
-        return suspendTransaction(database) {
+        return dbTransaction(database) {
             SessionsTable.selectAll().where {
                 SessionsTable.token eq token
             }.singleOrNull()?.toSession()
@@ -66,7 +66,7 @@ class PostgresAuthRepository (
     }
 
     override suspend fun deleteSession(token: String) {
-        suspendTransaction(database) {
+        dbTransaction(database) {
             SessionsTable.deleteWhere { SessionsTable.token eq token }
         }
     }

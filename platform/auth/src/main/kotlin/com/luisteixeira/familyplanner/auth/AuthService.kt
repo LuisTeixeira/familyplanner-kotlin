@@ -6,6 +6,8 @@ import com.luisteixeira.familyplanner.auth.model.User
 import com.luisteixeira.familyplanner.auth.persistence.AuthRepository
 import com.luisteixeira.familyplanner.core.domain.DomainException
 import com.luisteixeira.familyplanner.core.persistence.DuplicateEntryException
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import org.mindrot.jbcrypt.BCrypt
 import java.security.SecureRandom
 import java.time.Clock
@@ -26,7 +28,7 @@ class AuthService(
             email = email,
             displayName = displayName,
             createdAt = clock.instant(),
-            passwordHash = BCrypt.hashpw(password, BCrypt.gensalt()),
+            passwordHash = withContext(Dispatchers.Default) { BCrypt.hashpw(password, BCrypt.gensalt()) },
         )
         try {
             repo.saveUser(user)
@@ -38,7 +40,8 @@ class AuthService(
 
     suspend fun login(email: String, password: String): AuthResult {
         val user = repo.findUserByEmail(email) ?: throw DomainException("invalid credentials")
-        if (!BCrypt.checkpw(password, user.passwordHash)) throw DomainException("invalid credentials")
+        val passwordMatches = withContext(Dispatchers.Default) { BCrypt.checkpw(password, user.passwordHash) }
+        if (!passwordMatches) throw DomainException("invalid credentials")
         return AuthResult(user, createSession(user.id))
     }
 

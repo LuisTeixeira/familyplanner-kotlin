@@ -14,7 +14,7 @@ import org.jetbrains.exposed.v1.javatime.timestampWithTimeZone
 import org.jetbrains.exposed.v1.jdbc.Database
 import org.jetbrains.exposed.v1.jdbc.insert
 import org.jetbrains.exposed.v1.jdbc.selectAll
-import org.jetbrains.exposed.v1.jdbc.transactions.suspendTransaction
+import com.luisteixeira.familyplanner.core.persistence.postgres.dbTransaction
 import org.jetbrains.exposed.v1.jdbc.update
 import java.time.ZoneOffset
 import java.util.UUID
@@ -24,7 +24,7 @@ class PostgresHouseholdRepository(
 ) : HouseholdRepository {
 
     override suspend fun saveHousehold(household: Household) {
-        suspendTransaction(database) {
+        dbTransaction(database) {
             HouseholdsTable.insert {
                 it[id] = household.id
                 it[name] = household.name
@@ -34,7 +34,7 @@ class PostgresHouseholdRepository(
     }
 
     override suspend fun findHousehold(householdId: UUID): Household? {
-        return suspendTransaction(database) {
+        return dbTransaction(database) {
             HouseholdsTable.selectAll().where {
                 HouseholdsTable.id eq householdId
             }.singleOrNull()?.toHousehold()
@@ -42,7 +42,7 @@ class PostgresHouseholdRepository(
     }
 
     override suspend fun saveMember(member: HouseholdMember) {
-        suspendTransaction(database) {
+        dbTransaction(database) {
             val updated = HouseholdMembersTable.update({
                 (HouseholdMembersTable.householdId eq member.householdId) and
                         (HouseholdMembersTable.userId eq member.userId)
@@ -62,7 +62,7 @@ class PostgresHouseholdRepository(
     }
 
     override suspend fun isMember(householdId: UUID, userId: UUID): Boolean {
-        return suspendTransaction(database) {
+        return dbTransaction(database) {
             HouseholdMembersTable.selectAll().where {
                 (HouseholdMembersTable.householdId eq householdId) and
                         (HouseholdMembersTable.userId eq userId)
@@ -71,7 +71,7 @@ class PostgresHouseholdRepository(
     }
 
     override suspend fun listHouseholdsForUser(userId: UUID): List<Household> {
-        return suspendTransaction(database) {
+        return dbTransaction(database) {
             val householdIds = HouseholdMembersTable.selectAll()
                 .where { HouseholdMembersTable.userId eq userId }
                 .map { it[HouseholdMembersTable.householdId] }
@@ -87,7 +87,7 @@ class PostgresHouseholdRepository(
     }
 
     override suspend fun saveInvitation(invitation: Invitation) {
-        suspendTransaction(database) {
+        dbTransaction(database) {
             val updated = InvitationsTable.update ({ InvitationsTable.id eq invitation.id }) {
                 it[status] = invitation.status.name
             }
@@ -105,7 +105,7 @@ class PostgresHouseholdRepository(
     }
 
     override suspend fun findInvitation(invitationId: UUID): Invitation? {
-        return suspendTransaction(database) {
+        return dbTransaction(database) {
             InvitationsTable.selectAll().where {
                 InvitationsTable.id eq invitationId
             }.singleOrNull()?.toInvitation()
@@ -113,7 +113,7 @@ class PostgresHouseholdRepository(
     }
 
     override suspend fun listPendingInvitations(userId: UUID): List<Invitation> {
-        return suspendTransaction(database) {
+        return dbTransaction(database) {
             InvitationsTable.selectAll()
                 .where {
                     (InvitationsTable.invitedUserId eq userId) and
@@ -124,7 +124,7 @@ class PostgresHouseholdRepository(
     }
 
     override suspend fun findPendingInvitation(householdId: UUID, userId: UUID): Invitation? {
-        return suspendTransaction(database) {
+        return dbTransaction(database) {
             InvitationsTable.selectAll()
                 .where {
                     (InvitationsTable.householdId eq householdId) and

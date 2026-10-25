@@ -17,7 +17,7 @@ import org.jetbrains.exposed.v1.jdbc.Database
 import org.jetbrains.exposed.v1.jdbc.deleteWhere
 import org.jetbrains.exposed.v1.jdbc.insert
 import org.jetbrains.exposed.v1.jdbc.selectAll
-import org.jetbrains.exposed.v1.jdbc.transactions.suspendTransaction
+import com.luisteixeira.familyplanner.core.persistence.postgres.dbTransaction
 import org.jetbrains.exposed.v1.jdbc.update
 import java.time.Instant
 import java.time.ZoneId
@@ -29,7 +29,7 @@ class PostgresCalendarRepository(
 ) : CalendarRepository{
 
     override suspend fun saveEvent(event: Event) {
-        suspendTransaction(database) {
+        dbTransaction(database) {
             val updated = EventsTable.update({ EventsTable.id eq event.id }) {
                 it[householdId] = event.householdId
                 it[createdBy] = event.createdBy
@@ -60,20 +60,20 @@ class PostgresCalendarRepository(
     }
 
     override suspend fun findEvent(eventId: UUID): Event? {
-        return suspendTransaction(database) {
+        return dbTransaction(database) {
             EventsTable.selectAll().where { EventsTable.id eq eventId }
                 .singleOrNull()?.toEvent()
         }
     }
 
     override suspend fun deleteEvent(eventId: UUID) {
-        suspendTransaction(database) {
+        dbTransaction(database) {
             EventsTable.deleteWhere { EventsTable.id eq eventId }
         }
     }
 
     override suspend fun listByHousehold(householdId: UUID, from: Instant, to: Instant): List<Event> {
-        return suspendTransaction(database) {
+        return dbTransaction(database) {
             EventsTable.selectAll()
                 .where {
                     (EventsTable.householdId eq householdId ) and
@@ -86,7 +86,7 @@ class PostgresCalendarRepository(
     }
 
     override suspend fun findNextEvent(householdId: UUID, from: Instant): Event? {
-        return suspendTransaction(database) {
+        return dbTransaction(database) {
             EventsTable.selectAll()
                 .where {
                     (EventsTable.householdId eq householdId) and

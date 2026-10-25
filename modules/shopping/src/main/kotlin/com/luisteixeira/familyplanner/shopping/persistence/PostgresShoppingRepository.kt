@@ -13,7 +13,7 @@ import org.jetbrains.exposed.v1.javatime.timestampWithTimeZone
 import org.jetbrains.exposed.v1.jdbc.Database
 import org.jetbrains.exposed.v1.jdbc.insert
 import org.jetbrains.exposed.v1.jdbc.selectAll
-import org.jetbrains.exposed.v1.jdbc.transactions.suspendTransaction
+import com.luisteixeira.familyplanner.core.persistence.postgres.dbTransaction
 import org.jetbrains.exposed.v1.jdbc.update
 import java.time.ZoneOffset
 import java.util.UUID
@@ -21,7 +21,7 @@ import java.util.UUID
 class PostgresShoppingRepository(private val database: Database) : ShoppingRepository {
 
     override suspend fun saveList(list: ShoppingList) {
-        suspendTransaction(database) {
+        dbTransaction(database) {
             val updated = ShoppingListsTable.update({ ShoppingListsTable.id eq list.id }) {
                 it[householdId] = list.householdId
                 it[name] = list.name
@@ -38,25 +38,25 @@ class PostgresShoppingRepository(private val database: Database) : ShoppingRepos
     }
 
     override suspend fun findList(listId: UUID): ShoppingList? =
-        suspendTransaction(database) {
+        dbTransaction(database) {
             ShoppingListsTable.selectAll().where { ShoppingListsTable.id eq listId }
                 .singleOrNull()?.toShoppingList()
         }
 
     override suspend fun listsByHousehold(householdId: UUID): List<ShoppingList> =
-        suspendTransaction(database) {
+        dbTransaction(database) {
             ShoppingListsTable.selectAll().where { ShoppingListsTable.householdId eq householdId }
                 .map { it.toShoppingList() }
         }
 
     override suspend fun countLists(householdId: UUID): Int =
-        suspendTransaction(database) {
+        dbTransaction(database) {
             ShoppingListsTable.selectAll().where { ShoppingListsTable.householdId eq householdId }
                 .count().toInt()
         }
 
     override suspend fun saveItem(item: ShoppingItem) {
-        suspendTransaction(database) {
+        dbTransaction(database) {
             val updated = ShoppingItemsTable.update({ ShoppingItemsTable.id eq item.id }) {
                 it[name] = item.name
                 it[isCompleted] = item.isCompleted
@@ -74,19 +74,19 @@ class PostgresShoppingRepository(private val database: Database) : ShoppingRepos
     }
 
     override suspend fun findItem(itemId: UUID): ShoppingItem? =
-        suspendTransaction(database) {
+        dbTransaction(database) {
             ShoppingItemsTable.selectAll().where { ShoppingItemsTable.id eq itemId }
                 .singleOrNull()?.toShoppingItem()
         }
 
     override suspend fun itemsByList(listId: UUID): List<ShoppingItem> =
-        suspendTransaction(database) {
+        dbTransaction(database) {
             ShoppingItemsTable.selectAll().where { ShoppingItemsTable.listId eq listId }
                 .map { it.toShoppingItem() }
         }
 
     override suspend fun countItems(listId: UUID): ItemCounts =
-        suspendTransaction(database) {
+        dbTransaction(database) {
             val total = ShoppingItemsTable.selectAll()
                 .where { ShoppingItemsTable.listId eq listId }
                 .count()
@@ -99,7 +99,7 @@ class PostgresShoppingRepository(private val database: Database) : ShoppingRepos
         }
 
     override suspend fun countPendingItems(householdId: UUID): Int =
-        suspendTransaction(database) {
+        dbTransaction(database) {
             ShoppingItemsTable
                 .join(ShoppingListsTable, JoinType.INNER, ShoppingItemsTable.listId, ShoppingListsTable.id)
                 .selectAll()
