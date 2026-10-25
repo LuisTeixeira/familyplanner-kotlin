@@ -26,4 +26,18 @@ dependencies {
 
 tasks.test {
     useJUnitPlatform()
+    filter {
+        excludeTestsMatching("*Postgres*")
+    }
+}
+
+tasks.register<Test>("postgresTest") {
+    group = "verification"
+    description = "Runs the Postgres repository tests. Requires Docker."
+    testClassesDirs = sourceSets["test"].output.classesDirs
+    classpath = sourceSets["test"].runtimeClasspath
+    useJUnitPlatform()
+    filter {
+        includeTestsMatching("*Postgres*")
+    }
 }
