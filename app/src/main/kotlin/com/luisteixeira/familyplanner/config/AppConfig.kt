@@ -1,5 +1,8 @@
 package com.luisteixeira.familyplanner.config
 
+import java.security.SecureRandom
+import java.util.Base64
+
 enum class Persistence { MEMORY, POSTGRES }
 
 class DatabaseConfig(
@@ -12,9 +15,23 @@ class DatabaseConfig(
     }
 }
 
+class Secret(val value: String) {
+    init {
+        require(value.length >= 32) {
+            "FAMILYPLANNER_SECRET must be at least 32 characters"
+        }
+    }
+
+    override fun toString(): String {
+        return "Secret(***)"
+    }
+}
+
 data class AppConfig(
     val persistence: Persistence = Persistence.MEMORY,
     val database: DatabaseConfig? = null,
+    val secret: Secret = Secret(randomSecret()),
+    val secureCookies: Boolean = true,
 ) {
 
     init {
@@ -36,7 +53,19 @@ data class AppConfig(
             } else {
                 null
             }
-            return AppConfig(persistence, database)
+
+            val secret = env["FAMILYPLANNER_SECRET"]?.let { Secret(it) }
+                ?: if (persistence == Persistence.POSTGRES) {
+                    error("FAMILYPLANNER_SECRET must be set when FAMILYPLANNER_PERSISTENCE is postgres")
+                } else {
+                    Secret(randomSecret())
+                }
+
+            val secureCookies = env["FAMILYPLANNER_SECURE_COOKIES"]
+                ?.let { it.toBooleanStrictOrNull() ?: error("FAMILYPLANNER_SECURE_COOKIES must be true or false")}
+                ?: true
+
+            return AppConfig(persistence, database, secret, secureCookies)
         }
     }
 
@@ -44,4 +73,9 @@ data class AppConfig(
 
 private fun Map<String, String>.required(key: String): String {
     return this[key] ?: error("$key must be set when FAMILYPLANNER_PERSISTENCE is postgres")
+}
+
+private fun randomSecret(): String {
+    val bytes = ByteArray(32).also { SecureRandom().nextBytes(it) }
+    return Base64.getEncoder().encodeToString(bytes)
 }

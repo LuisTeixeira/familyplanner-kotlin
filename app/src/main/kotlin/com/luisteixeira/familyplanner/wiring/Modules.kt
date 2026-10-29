@@ -26,8 +26,8 @@ fun AppContext.modules(): List<AppModule> = listOf(
 )
 
 private fun authModule(ctx: AppContext) = AuthModule(
-    AuthWebHandler(ctx.auth, ctx.templates),
-    AuthApiHandler(ctx.auth)
+    AuthWebHandler(ctx.auth, ctx.templates, ctx.secureCookies),
+    AuthApiHandler(ctx.auth, ctx.secureCookies),
 )
 
 private fun householdModule(ctx: AppContext) = HouseholdModule (

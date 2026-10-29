@@ -17,6 +17,7 @@ import io.ktor.server.request.receiveParameters
 class AuthWebHandler(
     private val service: AuthService,
     private val templates: TemplateRegistry,
+    private val secureCookies: Boolean,
 ) {
 
     suspend fun showLoginPage(call: ApplicationCall) =
@@ -43,7 +44,7 @@ class AuthWebHandler(
             return
         }
 
-        call.setSessionCookie(result.session)
+        call.setSessionCookie(result.session, secureCookies)
         if (call.isHtmx()) return call.hxRedirect("/app/households")
         call.redirectSeeOther("/app/households")
     }
@@ -65,14 +66,14 @@ class AuthWebHandler(
             return
         }
 
-        call.setSessionCookie(result.session)
+        call.setSessionCookie(result.session, secureCookies)
         if (call.isHtmx()) return call.hxRedirect("/app/households")
         call.redirectSeeOther("/app/households")
     }
 
     suspend fun logout(call: ApplicationCall) {
         call.request.cookies[SESSION_COOKIE]?.let { service.logout(it) }
-        call.clearSessionCookie()
+        call.clearSessionCookie(secureCookies)
 
         if (call.isHtmx()) return call.hxRedirect("/app/login")
         call.redirectSeeOther("/app/login")

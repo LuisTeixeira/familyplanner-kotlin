@@ -18,6 +18,7 @@ data class AppContext(
     val household: HouseholdService,
     val shopping: ShoppingService,
     val calendar: CalendarService,
+    val secureCookies: Boolean,
 )
 
 private val assetModules = listOf(
@@ -28,19 +29,12 @@ private val assetModules = listOf(
     CalendarModule.NAME,
 )
 
-fun createAppContext(storage: Storage): AppContext {
+fun createAppContext(storage: Storage, secureCookies: Boolean): AppContext {
     val auth = AuthService(storage.auth)
     val household = HouseholdService(storage.household, auth, storage.transactions)
     val shopping = ShoppingService(storage.shopping)
     val calendar = CalendarService(storage.calendar)
     val templates = TemplateRegistry(assetModules.map(::templateRoot))
 
-    return AppContext(
-        templates,
-        auth,
-        household,
-        shopping,
-        calendar
-    )
-
+    return AppContext(templates, auth, household, shopping, calendar, secureCookies)
 }

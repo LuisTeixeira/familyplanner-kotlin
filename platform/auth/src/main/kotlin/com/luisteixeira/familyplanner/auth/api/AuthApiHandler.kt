@@ -15,7 +15,10 @@ import com.luisteixeira.familyplanner.core.web.respondJson
 import io.ktor.http.HttpStatusCode
 import io.ktor.server.application.ApplicationCall
 
-class AuthApiHandler(private val service: AuthService) {
+class AuthApiHandler(
+    private val service: AuthService,
+    private val secureCookies: Boolean,
+) {
 
     suspend fun register(call: ApplicationCall) {
         val request = call.receiveJsonOr400<RegisterRequest>("Invalid request payload")
@@ -24,7 +27,7 @@ class AuthApiHandler(private val service: AuthService) {
             service.register(request.email, request.password, request.displayName)
         }
 
-        call.setSessionCookie(result.session)
+        call.setSessionCookie(result.session, secureCookies)
         call.respondJson(AuthResponse(result.user.toDto(), result.session.token))
     }
 
@@ -33,13 +36,13 @@ class AuthApiHandler(private val service: AuthService) {
 
         val result = httpCatch(HttpStatusCode.Unauthorized) { service.login(request.email, request.password) }
 
-        call.setSessionCookie(result.session)
+        call.setSessionCookie(result.session, secureCookies)
         call.respondJson(AuthResponse(result.user.toDto(), result.session.token))
     }
 
     suspend fun logout(call: ApplicationCall) {
         call.request.cookies[SESSION_COOKIE]?.let { service.logout(it) }
-        call.clearSessionCookie()
+        call.clearSessionCookie(secureCookies)
 
         call.respondJson(MessageResponse("Logged out successfully"))
     }

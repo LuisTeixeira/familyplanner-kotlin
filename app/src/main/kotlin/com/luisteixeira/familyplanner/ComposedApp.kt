@@ -1,6 +1,7 @@
 package com.luisteixeira.familyplanner
 
 import com.luisteixeira.familyplanner.auth.SessionValidator
+import com.luisteixeira.familyplanner.auth.csrf.CsrfTokens
 import com.luisteixeira.familyplanner.config.AppConfig
 import com.luisteixeira.familyplanner.core.module.AppModule
 import com.luisteixeira.familyplanner.wiring.Storage
@@ -8,21 +9,28 @@ import com.luisteixeira.familyplanner.wiring.createAppContext
 import com.luisteixeira.familyplanner.wiring.modules
 import com.luisteixeira.familyplanner.wiring.storage
 
-class ComposedApp (
+class ComposedApp(
     val modules: List<AppModule>,
     val sessionValidator: SessionValidator,
+    val csrfTokens: CsrfTokens,
+    val secureCookies: Boolean,
     private val storage: Storage,
 ) : AutoCloseable {
 
     override fun close() {
         storage.close()
     }
-
 }
 
 fun composeApp(config: AppConfig = AppConfig()): ComposedApp {
     val storage = config.persistence.storage(config.database)
-    val context = createAppContext(storage)
+    val context = createAppContext(storage, config.secureCookies)
 
-    return ComposedApp(context.modules(), context.auth, storage)
+    return ComposedApp(
+        modules = context.modules(),
+        sessionValidator = context.auth,
+        csrfTokens = CsrfTokens(config.secret.value.toByteArray()),
+        secureCookies = config.secureCookies,
+        storage = storage,
+    )
 }

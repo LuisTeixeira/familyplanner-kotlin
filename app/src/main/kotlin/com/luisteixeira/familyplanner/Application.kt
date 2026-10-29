@@ -1,6 +1,7 @@
 package com.luisteixeira.familyplanner
 
 import com.luisteixeira.familyplanner.auth.SESSION_AUTH
+import com.luisteixeira.familyplanner.auth.csrf.CsrfProtection
 import com.luisteixeira.familyplanner.auth.sessionAuth
 import com.luisteixeira.familyplanner.core.module.PLATFORM_MODULE
 import com.luisteixeira.familyplanner.core.module.staticRoot
@@ -45,6 +46,11 @@ fun Application.familyPlannerApp(app: ComposedApp) {
         }
 
         route("/app") {
+            install(CsrfProtection) {
+                tokens = app.csrfTokens
+                secureCookies = app.secureCookies
+            }
+
             app.modules.forEach { it.registerPublicWebRoutes(this) }
 
             authenticate(SESSION_AUTH) {

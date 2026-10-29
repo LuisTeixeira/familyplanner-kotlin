@@ -26,6 +26,7 @@ services:
       FAMILYPLANNER_DB_URL: jdbc:postgresql://db:5432/familyplanner
       FAMILYPLANNER_DB_USER: ${POSTGRES_USER:-familyplanner}
       FAMILYPLANNER_DB_PASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD in .env}
+      FAMILYPLANNER_SECRET: ${FAMILYPLANNER_SECRET:?set FAMILYPLANNER_SECRET in .env}
     restart: unless-stopped
 
 volumes:
