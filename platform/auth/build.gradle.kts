@@ -11,6 +11,7 @@ dependencies {
     implementation(project(":platform:core"))
     implementation(libs.ktor.server.core)
     implementation(libs.ktor.server.auth)
+    implementation(libs.ktor.server.auth.jwt)
     implementation(libs.jbcrypt)
     implementation(libs.kotlinx.serialization.json)
     implementation(libs.exposed.core)
