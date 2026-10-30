@@ -1,6 +1,6 @@
 package com.luisteixeira.familyplanner.household.api
 
-import com.luisteixeira.familyplanner.auth.currentUserId
+import com.luisteixeira.familyplanner.auth.shared.currentUserId
 import com.luisteixeira.familyplanner.core.web.HttpError
 import com.luisteixeira.familyplanner.core.web.MessageResponse
 import com.luisteixeira.familyplanner.core.web.httpCatch

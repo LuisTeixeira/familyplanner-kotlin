@@ -1,7 +1,8 @@
 package com.luisteixeira.familyplanner.wiring
 
 import com.luisteixeira.familyplanner.auth.AuthModule
-import com.luisteixeira.familyplanner.auth.AuthService
+import com.luisteixeira.familyplanner.auth.session.SessionService
+import com.luisteixeira.familyplanner.auth.users.UserService
 import com.luisteixeira.familyplanner.calendar.CalendarModule
 import com.luisteixeira.familyplanner.calendar.CalendarService
 import com.luisteixeira.familyplanner.core.module.PLATFORM_MODULE
@@ -14,7 +15,8 @@ import com.luisteixeira.familyplanner.shopping.ShoppingService
 
 data class AppContext(
     val templates: TemplateRegistry,
-    val auth: AuthService,
+    val users: UserService,
+    val sessions: SessionService,
     val household: HouseholdService,
     val shopping: ShoppingService,
     val calendar: CalendarService,
@@ -30,11 +32,12 @@ private val assetModules = listOf(
 )
 
 fun createAppContext(storage: Storage, secureCookies: Boolean): AppContext {
-    val auth = AuthService(storage.auth)
-    val household = HouseholdService(storage.household, auth, storage.transactions)
+    val users = UserService(storage.users)
+    val sessions = SessionService(storage.sessions)
+    val household = HouseholdService(storage.household, users, storage.transactions)
     val shopping = ShoppingService(storage.shopping)
     val calendar = CalendarService(storage.calendar)
     val templates = TemplateRegistry(assetModules.map(::templateRoot))
 
-    return AppContext(templates, auth, household, shopping, calendar, secureCookies)
+    return AppContext(templates, users, sessions, household, shopping, calendar, secureCookies)
 }

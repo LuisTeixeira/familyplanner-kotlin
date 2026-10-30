@@ -1,8 +1,8 @@
 package com.luisteixeira.familyplanner
 
-import com.luisteixeira.familyplanner.auth.SESSION_AUTH
+import com.luisteixeira.familyplanner.auth.session.SESSION_AUTH
 import com.luisteixeira.familyplanner.auth.csrf.CsrfProtection
-import com.luisteixeira.familyplanner.auth.sessionAuth
+import com.luisteixeira.familyplanner.auth.session.sessionAuth
 import com.luisteixeira.familyplanner.core.module.PLATFORM_MODULE
 import com.luisteixeira.familyplanner.core.module.staticRoot
 import com.luisteixeira.familyplanner.core.web.HttpError

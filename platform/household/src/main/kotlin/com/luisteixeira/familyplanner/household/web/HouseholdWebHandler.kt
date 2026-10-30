@@ -1,6 +1,6 @@
 package com.luisteixeira.familyplanner.household.web
 
-import com.luisteixeira.familyplanner.auth.currentUserId
+import com.luisteixeira.familyplanner.auth.shared.currentUserId
 import com.luisteixeira.familyplanner.core.web.HttpError
 import com.luisteixeira.familyplanner.core.web.TemplateRegistry
 import com.luisteixeira.familyplanner.core.web.escapeHtml

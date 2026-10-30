@@ -1,8 +1,11 @@
 package com.luisteixeira.familyplanner.wiring
 
-import com.luisteixeira.familyplanner.auth.persistence.AuthRepository
-import com.luisteixeira.familyplanner.auth.persistence.InMemoryAuthRepository
-import com.luisteixeira.familyplanner.auth.persistence.PostgresAuthRepository
+import com.luisteixeira.familyplanner.auth.session.InMemorySessionRepository
+import com.luisteixeira.familyplanner.auth.session.PostgresSessionRepository
+import com.luisteixeira.familyplanner.auth.session.SessionRepository
+import com.luisteixeira.familyplanner.auth.users.InMemoryUserRepository
+import com.luisteixeira.familyplanner.auth.users.PostgresUserRepository
+import com.luisteixeira.familyplanner.auth.users.UserRepository
 import com.luisteixeira.familyplanner.calendar.persistence.CalendarRepository
 import com.luisteixeira.familyplanner.calendar.persistence.InMemoryCalendarRepository
 import com.luisteixeira.familyplanner.calendar.persistence.PostgresCalendarRepository
@@ -22,7 +25,8 @@ import com.luisteixeira.familyplanner.shopping.persistence.PostgresShoppingRepos
 import com.luisteixeira.familyplanner.shopping.persistence.ShoppingRepository
 
 class Storage(
-    val auth: AuthRepository,
+    val users: UserRepository,
+    val sessions: SessionRepository,
     val household: HouseholdRepository,
     val shopping: ShoppingRepository,
     val calendar: CalendarRepository,
@@ -40,7 +44,8 @@ private val moduleSchemas = listOf("auth", "household", "shopping", "calendar")
 
 fun Persistence.storage(database: DatabaseConfig?): Storage = when (this) {
     Persistence.MEMORY -> Storage(
-        auth = InMemoryAuthRepository(),
+        users = InMemoryUserRepository(),
+        sessions = InMemorySessionRepository(),
         household = InMemoryHouseholdRepository(),
         shopping = InMemoryShoppingRepository(),
         calendar = InMemoryCalendarRepository(),
@@ -58,7 +63,8 @@ private fun postgresStorage(config: DatabaseConfig): Storage {
     val postgres = connectPostgres(config.url, config.user, config.password)
     moduleSchemas.forEach { migrate(postgres.dataSource, schema = it, module = it) }
     return Storage(
-        auth = PostgresAuthRepository(postgres.database),
+        users = PostgresUserRepository(postgres.database),
+        sessions = PostgresSessionRepository(postgres.database),
         household = PostgresHouseholdRepository(postgres.database),
         shopping = PostgresShoppingRepository(postgres.database),
         calendar = PostgresCalendarRepository(postgres.database),

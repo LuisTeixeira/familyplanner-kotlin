@@ -1,6 +1,6 @@
 package com.luisteixeira.familyplanner.household
 
-import com.luisteixeira.familyplanner.auth.UserDirectory
+import com.luisteixeira.familyplanner.auth.shared.UserDirectory
 import com.luisteixeira.familyplanner.core.domain.DomainException
 import com.luisteixeira.familyplanner.core.persistence.TransactionRunner
 import com.luisteixeira.familyplanner.household.model.Household

@@ -1,6 +1,6 @@
 package com.luisteixeira.familyplanner.auth.csrf
 
-import com.luisteixeira.familyplanner.auth.SESSION_COOKIE
+import com.luisteixeira.familyplanner.auth.session.SESSION_COOKIE
 import com.luisteixeira.familyplanner.core.web.HttpError
 import io.ktor.http.HttpHeaders
 import io.ktor.http.HttpMethod

@@ -1,6 +1,6 @@
 package com.luisteixeira.familyplanner.household
 
-import com.luisteixeira.familyplanner.auth.currentUserIdOrNull
+import com.luisteixeira.familyplanner.auth.shared.currentUserIdOrNull
 import com.luisteixeira.familyplanner.core.web.HttpError
 import com.luisteixeira.familyplanner.core.web.toUuidOrNull
 import io.ktor.http.HttpStatusCode

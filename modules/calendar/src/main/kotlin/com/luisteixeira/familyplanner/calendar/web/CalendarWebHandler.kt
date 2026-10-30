@@ -1,6 +1,6 @@
 package com.luisteixeira.familyplanner.calendar.web
 
-import com.luisteixeira.familyplanner.auth.currentUserId
+import com.luisteixeira.familyplanner.auth.shared.currentUserId
 import com.luisteixeira.familyplanner.calendar.CalendarService
 import com.luisteixeira.familyplanner.calendar.model.Event
 import com.luisteixeira.familyplanner.calendar.model.EventInput

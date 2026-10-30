@@ -1,6 +1,6 @@
 package com.luisteixeira.familyplanner.calendar.api
 
-import com.luisteixeira.familyplanner.auth.currentUserId
+import com.luisteixeira.familyplanner.auth.shared.currentUserId
 import com.luisteixeira.familyplanner.calendar.CalendarService
 import com.luisteixeira.familyplanner.calendar.dto.EventRequest
 import com.luisteixeira.familyplanner.calendar.dto.eventRange
