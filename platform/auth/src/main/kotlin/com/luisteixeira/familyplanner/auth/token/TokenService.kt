@@ -9,10 +9,10 @@ import java.util.Base64
 import java.util.HexFormat
 import java.util.UUID
 
-
 data class TokenPair(
     val accessToken: String,
-    val refreshToken: String
+    val refreshToken: String,
+    val accessTokenExpiresIn: Long,
 )
 
 class TokenService(
@@ -29,7 +29,7 @@ class TokenService(
 
     suspend fun refresh(rawRefreshToken: String): TokenPair {
         val tokenHash = hash(rawRefreshToken)
-        val stored = refreshTokens.findByHash(hash(rawRefreshToken)) ?: throw invalidToken()
+        val stored = refreshTokens.findByHash(tokenHash) ?: throw invalidToken()
         val now = clock.instant()
 
         if (now.isAfter(stored.expiresAt)) throw invalidToken()
@@ -59,7 +59,11 @@ class TokenService(
                 revokedAt = null,
             ),
         )
-        return TokenPair(accessTokens.issue(userId), rawRefreshToken)
+        return TokenPair(
+            accessToken = accessTokens.issue(userId),
+            refreshToken = rawRefreshToken,
+            accessTokenExpiresIn = accessTokens.lifetime.seconds
+        )
     }
 
     private fun invalidToken() = DomainException("invalid refresh token")

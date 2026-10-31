@@ -12,17 +12,11 @@ import io.ktor.http.ContentType
 import io.ktor.http.HttpHeaders
 import io.ktor.http.HttpStatusCode
 import io.ktor.http.contentType
-import io.ktor.server.testing.testApplication
 import kotlin.test.Test
 import kotlin.test.assertContains
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertNotNull
-
-private fun withApp(config: AppConfig = AppConfig(), block: suspend (HttpClient) -> Unit) = testApplication {
-    application { familyPlannerApp(composeApp(config)) }
-    block(createClient { })
-}
 
 private fun setCookie(response: HttpResponse, name: String): String? =
     response.headers.getAll(HttpHeaders.SetCookie)?.firstOrNull { it.startsWith("$name=") }

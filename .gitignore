@@ -22,3 +22,6 @@ out/
 
 # Env
 .env
+
+# Local secrets (JWT signing keys)
+keys/

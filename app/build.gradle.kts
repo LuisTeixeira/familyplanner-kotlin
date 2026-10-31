@@ -32,6 +32,14 @@ application {
     mainClass.set("com.luisteixeira.familyplanner.MainKt")
 }
 
+tasks.register<JavaExec>("createApiKey") {
+    group = "application"
+    description = "Creates an API key. Usage: ./gradlew createApiKey -PclientName=my-app"
+    classpath = sourceSets["main"].runtimeClasspath
+    mainClass.set("com.luisteixeira.familyplanner.admin.CreateApiKeyKt")
+    args = listOfNotNull(providers.gradleProperty("clientName").orNull)
+}
+
 tasks.test {
     useJUnitPlatform()
 }

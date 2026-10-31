@@ -1,8 +1,14 @@
 package com.luisteixeira.familyplanner.wiring
 
+import com.luisteixeira.familyplanner.auth.apikey.ApiClientRepository
+import com.luisteixeira.familyplanner.auth.apikey.InMemoryApiClientRepository
+import com.luisteixeira.familyplanner.auth.apikey.PostgresApiClientRepository
 import com.luisteixeira.familyplanner.auth.session.InMemorySessionRepository
 import com.luisteixeira.familyplanner.auth.session.PostgresSessionRepository
 import com.luisteixeira.familyplanner.auth.session.SessionRepository
+import com.luisteixeira.familyplanner.auth.token.InMemoryRefreshTokenRepository
+import com.luisteixeira.familyplanner.auth.token.PostgresRefreshTokenRepository
+import com.luisteixeira.familyplanner.auth.token.RefreshTokenRepository
 import com.luisteixeira.familyplanner.auth.users.InMemoryUserRepository
 import com.luisteixeira.familyplanner.auth.users.PostgresUserRepository
 import com.luisteixeira.familyplanner.auth.users.UserRepository
@@ -27,6 +33,8 @@ import com.luisteixeira.familyplanner.shopping.persistence.ShoppingRepository
 class Storage(
     val users: UserRepository,
     val sessions: SessionRepository,
+    val apiClients: ApiClientRepository,
+    val refreshTokens: RefreshTokenRepository,
     val household: HouseholdRepository,
     val shopping: ShoppingRepository,
     val calendar: CalendarRepository,
@@ -46,6 +54,8 @@ fun Persistence.storage(database: DatabaseConfig?): Storage = when (this) {
     Persistence.MEMORY -> Storage(
         users = InMemoryUserRepository(),
         sessions = InMemorySessionRepository(),
+        apiClients = InMemoryApiClientRepository(),
+        refreshTokens = InMemoryRefreshTokenRepository(),
         household = InMemoryHouseholdRepository(),
         shopping = InMemoryShoppingRepository(),
         calendar = InMemoryCalendarRepository(),
@@ -65,9 +75,12 @@ private fun postgresStorage(config: DatabaseConfig): Storage {
     return Storage(
         users = PostgresUserRepository(postgres.database),
         sessions = PostgresSessionRepository(postgres.database),
+        apiClients = PostgresApiClientRepository(postgres.database),
+        refreshTokens = PostgresRefreshTokenRepository(postgres.database),
         household = PostgresHouseholdRepository(postgres.database),
         shopping = PostgresShoppingRepository(postgres.database),
         calendar = PostgresCalendarRepository(postgres.database),
-        transactions = PostgresTransactionRunner(postgres.database)
+        transactions = PostgresTransactionRunner(postgres.database),
+        pool = postgres
     )
 }

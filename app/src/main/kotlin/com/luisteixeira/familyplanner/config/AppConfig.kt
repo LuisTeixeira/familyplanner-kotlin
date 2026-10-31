@@ -1,6 +1,14 @@
 package com.luisteixeira.familyplanner.config
 
+import java.nio.file.Files
+import java.nio.file.Path
+import java.security.KeyFactory
+import java.security.KeyPair
+import java.security.KeyPairGenerator
 import java.security.SecureRandom
+import java.security.interfaces.RSAPrivateCrtKey
+import java.security.spec.PKCS8EncodedKeySpec
+import java.security.spec.RSAPublicKeySpec
 import java.util.Base64
 
 enum class Persistence { MEMORY, POSTGRES }
@@ -27,11 +35,18 @@ class Secret(val value: String) {
     }
 }
 
+class JwtConfig(
+    val keys: KeyPair,
+    val issuer: String = "familyplanner",
+    val audience: String = "familyplanner-api"
+)
+
 data class AppConfig(
     val persistence: Persistence = Persistence.MEMORY,
     val database: DatabaseConfig? = null,
     val secret: Secret = Secret(randomSecret()),
     val secureCookies: Boolean = true,
+    val jwt: JwtConfig = JwtConfig(generateRsaKeyPair()),
 ) {
 
     init {
@@ -65,7 +80,18 @@ data class AppConfig(
                 ?.let { it.toBooleanStrictOrNull() ?: error("FAMILYPLANNER_SECURE_COOKIES must be true or false")}
                 ?: true
 
-            return AppConfig(persistence, database, secret, secureCookies)
+            val jwt = JwtConfig(
+                keys = env["FAMILYPLANNER_JWT_PRIVATE_KEY"]?.let { loadPrivateKey(Path.of(it)) }
+                    ?: if (persistence == Persistence.POSTGRES) {
+                        error("FAMILYPLANNER_JWT_PRIVATE_KEY must be set when FAMILYPLANNER_PERSISTENCE is postgres")
+                    } else {
+                        generateRsaKeyPair()
+                    },
+                issuer = env["FAMILYPLANNER_JWT_ISSUER"] ?: "familyplanner",
+                audience = env["FAMILYPLANNER_JWT_AUDIENCE"] ?: "familyplanner-api",
+            )
+
+            return AppConfig(persistence, database, secret, secureCookies, jwt)
         }
     }
 
@@ -78,4 +104,25 @@ private fun Map<String, String>.required(key: String): String {
 private fun randomSecret(): String {
     val bytes = ByteArray(32).also { SecureRandom().nextBytes(it) }
     return Base64.getEncoder().encodeToString(bytes)
+}
+
+private fun generateRsaKeyPair(): KeyPair =
+    KeyPairGenerator.getInstance("RSA").apply { initialize(2048) }.generateKeyPair()
+
+private fun loadPrivateKey(path: Path): KeyPair {
+    require(Files.isRegularFile(path)) {
+        "FAMILYPLANNER_JWT_PRIVATE_KEY must point to an existing file"
+    }
+    val pem = Files.readString(path)
+    require("BEGIN PRIVATE KEY" in pem) {
+        "FAMILYPLANNER_JWT_PRIVATE_KEY must be a PKCS#8 PEM file (BEGIN PRIVATE KEY)"
+    }
+    val body = pem.lineSequence()
+        .filterNot { it.startsWith("-----") }
+        .joinToString("")
+    val privateKey = KeyFactory.getInstance("RSA")
+        .generatePrivate(PKCS8EncodedKeySpec(Base64.getMimeDecoder().decode(body))) as RSAPrivateCrtKey
+    val publicKey = KeyFactory.getInstance("RSA")
+        .generatePublic(RSAPublicKeySpec(privateKey.modulus, privateKey.publicExponent))
+    return KeyPair(publicKey, privateKey)
 }

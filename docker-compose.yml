@@ -21,12 +21,18 @@ services:
     image: familyplanner:latest
     ports:
       - "8080:8080"
+    depends_on:
+      db:
+        condition: service_healthy
     environment:
-      FAMILYPLANNER_PERSISTENCE: memory
+      FAMILYPLANNER_PERSISTENCE: postgres
       FAMILYPLANNER_DB_URL: jdbc:postgresql://db:5432/familyplanner
       FAMILYPLANNER_DB_USER: ${POSTGRES_USER:-familyplanner}
       FAMILYPLANNER_DB_PASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD in .env}
       FAMILYPLANNER_SECRET: ${FAMILYPLANNER_SECRET:?set FAMILYPLANNER_SECRET in .env}
+      FAMILYPLANNER_JWT_PRIVATE_KEY: /run/secrets/jwt-private.pem
+    volumes:
+      - ./keys/jwt-private.pem:/run/secrets/jwt-private.pem:ro
     restart: unless-stopped
 
 volumes:

@@ -13,7 +13,6 @@ import io.ktor.http.HttpHeaders
 import io.ktor.http.HttpStatusCode
 import io.ktor.http.contentType
 import io.ktor.http.isSuccess
-import io.ktor.server.testing.testApplication
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.JsonObject
@@ -25,11 +24,6 @@ import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
-
-private fun withApp(block: suspend (HttpClient) -> Unit) = testApplication {
-    application { familyPlannerApp(composeApp()) }
-    block(createClient { })
-}
 
 private suspend fun HttpClient.postJson(path: String, body: String, token: String? = null): HttpResponse =
     post(path) {
@@ -55,7 +49,7 @@ private suspend fun HttpClient.registerUser(email: String, displayName: String):
         "/api/v1/register",
         """{"email":"$email","password":"secret123","display_name":"$displayName"}""",
     ).json()
-    return body.getValue("user").jsonObject.str("id") to body.str("token")
+    return body.getValue("user").jsonObject.str("id") to body.str("access_token")
 }
 
 private suspend fun HttpClient.createHousehold(name: String, token: String): String =
@@ -86,7 +80,7 @@ class ApplicationApiTest {
         assertEquals("ann@example.com", user.str("email"))
         assertEquals("Ann", user.str("display_name"))
         assertNull(user["password_hash"])
-        assertTrue(body.str("token").isNotEmpty())
+        assertTrue(body.str("access_token").isNotEmpty())
     }
 
     @Test
@@ -237,9 +231,10 @@ class ApplicationApiTest {
     fun householdDashboardRendersShoppingWidget() = withApp { client ->
         val (_, token) = client.registerUser("widget@example.com", "Widget")
         val householdId = client.createHousehold("Dash", token)
+        val sessionToken = client.webLogin("widget@example.com")
 
         val response = client.get("/app/households/$householdId") {
-            header(HttpHeaders.Authorization, "Bearer $token")
+            header(HttpHeaders.Cookie, "session_token=$sessionToken")
         }
         val html = response.bodyAsText()
 

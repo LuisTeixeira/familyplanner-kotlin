@@ -14,7 +14,6 @@ import io.ktor.http.HttpHeaders
 import io.ktor.http.HttpStatusCode
 import io.ktor.http.contentType
 import io.ktor.http.isSuccess
-import io.ktor.server.testing.testApplication
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.JsonObject
@@ -29,11 +28,6 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
-
-private fun withApp(block: suspend (HttpClient) -> Unit) = testApplication {
-    application { familyPlannerApp(composeApp()) }
-    block(createClient { })
-}
 
 private suspend fun HttpClient.postJson(path: String, body: String, token: String? = null): HttpResponse =
     post(path) {
@@ -55,6 +49,9 @@ private suspend fun HttpClient.getWithToken(path: String, token: String): HttpRe
 private suspend fun HttpClient.deleteWithToken(path: String, token: String): HttpResponse =
     delete(path) { header(HttpHeaders.Authorization, "Bearer $token") }
 
+private suspend fun HttpClient.webGet(path: String, sessionToken: String): HttpResponse =
+    get(path) { header(HttpHeaders.Cookie, "session_token=$sessionToken") }
+
 private suspend fun HttpResponse.json(): JsonObject = Json.parseToJsonElement(bodyAsText()).jsonObject
 
 private suspend fun HttpResponse.jsonList(): JsonArray = Json.parseToJsonElement(bodyAsText()).jsonArray
@@ -65,7 +62,7 @@ private suspend fun HttpClient.registerUser(email: String): String =
     postJson(
         "/api/v1/register",
         "{\"email\":\"$email\",\"password\":\"secret123\",\"display_name\":\"User\"}",
-    ).json().str("token")
+    ).json().str("access_token")
 
 private suspend fun HttpClient.createHousehold(name: String, token: String): String =
     postJson("/api/v1/households", "{\"name\":\"$name\"}", token).json().str("id")
@@ -225,10 +222,11 @@ class CalendarApplicationTest {
         val token = client.registerUser("week@example.com")
         val householdId = client.createHousehold("Home", token)
         client.createEvent(householdId, token, monday, "Standup", time = "10:30")
+        val session = client.webLogin("week@example.com")
 
-        val response = client.getWithToken(
+        val response = client.webGet(
             "/app/households/$householdId/calendar?week=$monday&timezone=UTC",
-            token,
+            session,
         )
         val html = response.bodyAsText()
 
@@ -242,8 +240,9 @@ class CalendarApplicationTest {
         val token = client.registerUser("widget-event@example.com")
         val householdId = client.createHousehold("Home", token)
         client.createEvent(householdId, token, today.plusDays(2), "Dentist")
+        val session = client.webLogin("widget-event@example.com")
 
-        val response = client.getWithToken("/app/households/$householdId", token)
+        val response = client.webGet("/app/households/$householdId", session)
         val html = response.bodyAsText()
 
         assertEquals(HttpStatusCode.OK, response.status)
@@ -256,7 +255,9 @@ class CalendarApplicationTest {
         val householdId = client.createHousehold("Home", token)
         val eventId = client.createEvent(householdId, token, today, "Dentist").str("id")
 
-        val response = client.getWithToken("/app/households/$householdId/calendar/events/$eventId", token)
+        val session = client.webLogin("edit-form@example.com")
+
+        val response = client.webGet("/app/households/$householdId/calendar/events/$eventId", session)
         val html = response.bodyAsText()
 
         assertEquals(HttpStatusCode.OK, response.status)
@@ -270,7 +271,9 @@ class CalendarApplicationTest {
         val token = client.registerUser("new-form@example.com")
         val householdId = client.createHousehold("Home", token)
 
-        val response = client.getWithToken("/app/households/$householdId/calendar/events/new", token)
+        val session = client.webLogin("new-form@example.com")
+
+        val response = client.webGet("/app/households/$householdId/calendar/events/new", session)
         val html = response.bodyAsText()
 
         assertEquals(HttpStatusCode.OK, response.status)

@@ -32,6 +32,7 @@ class AuthModule(
     override fun registerPublicApiRoutes(r: Route) {
         r.post("/register") { apiHandler.register(call) }
         r.post("/login") { apiHandler.login(call) }
+        r.post("/token/refresh") { apiHandler.refresh(call) }
     }
 
     override fun registerProtectedApiRoutes(r: Route) {

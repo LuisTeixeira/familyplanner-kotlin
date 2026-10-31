@@ -1,8 +1,11 @@
 package com.luisteixeira.familyplanner
 
+import com.luisteixeira.familyplanner.auth.apikey.ApiKeyGuard
 import com.luisteixeira.familyplanner.auth.session.SESSION_AUTH
 import com.luisteixeira.familyplanner.auth.csrf.CsrfProtection
 import com.luisteixeira.familyplanner.auth.session.sessionAuth
+import com.luisteixeira.familyplanner.auth.token.JWT_AUTH
+import com.luisteixeira.familyplanner.auth.token.jwtAuth
 import com.luisteixeira.familyplanner.core.module.PLATFORM_MODULE
 import com.luisteixeira.familyplanner.core.module.staticRoot
 import com.luisteixeira.familyplanner.core.web.HttpError
@@ -28,6 +31,7 @@ fun Application.familyPlannerApp(app: ComposedApp) {
 
     install(Authentication) {
         sessionAuth(app.sessionValidator)
+        jwtAuth(app.tokenVerifier)
     }
 
     install(StatusPages) {
@@ -59,9 +63,13 @@ fun Application.familyPlannerApp(app: ComposedApp) {
         }
 
         route("/api/v1") {
+            install(ApiKeyGuard) {
+                service = app.apiKeys
+            }
+
             app.modules.forEach { it.registerPublicApiRoutes(this) }
 
-            authenticate(SESSION_AUTH) {
+            authenticate(JWT_AUTH) {
                 app.modules.forEach { it.registerProtectedApiRoutes(this) }
             }
         }

@@ -1,11 +1,9 @@
 package com.luisteixeira.familyplanner.auth.api
 
-import com.luisteixeira.familyplanner.auth.session.SESSION_COOKIE
-import com.luisteixeira.familyplanner.auth.session.SessionService
-import com.luisteixeira.familyplanner.auth.session.clearSessionCookie
-import com.luisteixeira.familyplanner.auth.session.setSessionCookie
+import com.luisteixeira.familyplanner.auth.token.TokenService
 import com.luisteixeira.familyplanner.auth.users.LoginRequest
 import com.luisteixeira.familyplanner.auth.users.RegisterRequest
+import com.luisteixeira.familyplanner.auth.users.User
 import com.luisteixeira.familyplanner.auth.users.UserService
 import com.luisteixeira.familyplanner.auth.users.toDto
 import com.luisteixeira.familyplanner.core.web.MessageResponse
@@ -17,8 +15,7 @@ import io.ktor.server.application.ApplicationCall
 
 class AuthApiHandler(
     private val users: UserService,
-    private val sessions: SessionService,
-    private val secureCookies: Boolean,
+    private val tokens: TokenService,
 ) {
 
     suspend fun register(call: ApplicationCall) {
@@ -28,9 +25,7 @@ class AuthApiHandler(
             users.register(request.email, request.password, request.displayName)
         }
 
-        val session = sessions.create(user.id)
-        call.setSessionCookie(session, secureCookies)
-        call.respondJson(AuthResponse(user.toDto(), session.token))
+        call.respondAuth(user)
     }
 
     suspend fun login(call: ApplicationCall) {
@@ -38,15 +33,29 @@ class AuthApiHandler(
 
         val user = httpCatch(HttpStatusCode.Unauthorized) { users.authenticate(request.email, request.password) }
 
-        val session = sessions.create(user.id)
-        call.setSessionCookie(session, secureCookies)
-        call.respondJson(AuthResponse(user.toDto(), session.token))
+        call.respondAuth(user)
+    }
+
+    suspend fun refresh(call: ApplicationCall) {
+        val request = call.receiveJsonOr400<RefreshRequest>("Invalid request payload")
+
+        val pair = httpCatch(HttpStatusCode.Unauthorized) {
+            tokens.refresh(request.refreshToken)
+        }
+
+        call.respondJson(TokenResponse(pair.accessToken, pair.refreshToken, pair.accessTokenExpiresIn))
     }
 
     suspend fun logout(call: ApplicationCall) {
-        call.request.cookies[SESSION_COOKIE]?.let { sessions.delete(it) }
-        call.clearSessionCookie(secureCookies)
+        val request = call.receiveJsonOr400<RefreshRequest>("Invalid request payload")
+
+        tokens.logout(request.refreshToken)
 
         call.respondJson(MessageResponse("Logged out successfully"))
+    }
+
+    private suspend fun ApplicationCall.respondAuth(user: User) {
+        val pair = tokens.issue(user.id)
+        respondJson(AuthResponse(user.toDto(), pair.accessToken, pair.refreshToken, pair.accessTokenExpiresIn))
     }
 }
